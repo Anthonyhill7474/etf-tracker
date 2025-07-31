@@ -71,9 +71,9 @@ class Program
             string trimmedSymbol = symbol.Trim();
             try
             {
-                // need to wait on free plan, 5 calls per minute
-                await Task.Delay(13000); // 13 seconds between calls (max 4/min)
-                var ETFcloses = await GetLast30Closes(trimmedSymbol);
+                
+                
+                var ETFcloses = await GetLast30ClosesFromTwelveData(trimmedSymbol);
                 if (ETFcloses.Length < 14)
                 {
                     Console.WriteLine($"{symbol}: Insufficient data\n");
@@ -139,6 +139,48 @@ class Program
                 .Take(30)
                 .Select(p => decimal.Parse(p.Value["4. close"]!.ToString()))
                 .Reverse() // Reverse to make it oldest → newest
+                .ToArray();
+
+            Console.WriteLine($"✅ {closes.Length} close prices retrieved.");
+            return closes;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❗ Error fetching data for {symbol}: {ex.Message}");
+            return Array.Empty<decimal>();
+        }
+    }
+
+    static async Task<decimal[]> GetLast30ClosesFromTwelveData(string symbol)
+    {
+        string? apiKey = Environment.GetEnvironmentVariable("TWELVE_DATA_API_KEY");
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            Console.WriteLine("❌ Twelve Data API key not found.");
+            return Array.Empty<decimal>();
+        }
+
+        try
+        {
+            var url = $"https://api.twelvedata.com/time_series?symbol={symbol}&interval=1day&outputsize=30&apikey={apiKey}";
+            using var client = new HttpClient();
+
+            Console.WriteLine($"\n=== Fetching historical data for {symbol} from Twelve Data ===");
+            Console.WriteLine($"URL: {url}");
+
+            var response = await client.GetStringAsync(url);
+            var json = JObject.Parse(response);
+
+            var values = json["values"] as JArray;
+            if (values == null || values.Count == 0)
+            {
+                Console.WriteLine("❌ No time series data found.");
+                return Array.Empty<decimal>();
+            }
+
+            var closes = values
+                .Select(p => decimal.Parse(p["close"]!.ToString()))
+                .Reverse() // API returns newest first; reverse to get oldest → newest
                 .ToArray();
 
             Console.WriteLine($"✅ {closes.Length} close prices retrieved.");
