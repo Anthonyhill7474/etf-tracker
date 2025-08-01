@@ -28,7 +28,7 @@ public static class DisplayHelper
         Console.WriteLine($"{symbol}: ${latest} | 30d high ${high30} | Drop {drop30:F2}% | RSI: {rsi30:F1}");
         Console.WriteLine($"{symbol} (3m): ${latest} | 90d high ${high90} | Drop {drop90:F2}% | RSI: {rsi60:F1}");
 
-        if (drop30 > 5)
+        if (drop30 > 4)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine($"⚠️ {symbol} dropped {drop30:F2}% from 30d high");
@@ -51,7 +51,7 @@ public static class DisplayHelper
             await EmailHelper.SendEmailAsync(subject, body);
             Console.ResetColor();
         }
-        else if (drop90 > 8)
+        else if (drop90 > 7)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine($"🔍 {symbol} dropped {drop90:F2}% from 90d high");
