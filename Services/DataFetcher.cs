@@ -3,42 +3,60 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-
-public static class DataFetcher
+namespace Services
 {
-    public static async Task AnalyzeETFs(string[] symbols, string apiKey)
+    public static class DataFetcher
     {
-        foreach (string symbol in symbols)
+        public static async Task AnalyzeETFs(string[] symbols, string apiKey)
         {
-            await Task.Delay(15000);
-            var closes30 = await GetCloses(symbol, apiKey, days: 30);
-            var closes90 = await GetCloses(symbol, apiKey, days: 90);
-
-            if (closes30.Length < 1 || closes90.Length < 1)
+            foreach (string symbol in symbols)
             {
-                Console.WriteLine($"{symbol}: Insufficient data\n");
-                continue;
+                await Task.Delay(15000);
+                var closes30 = await GetCloses(symbol, apiKey, days: 30);
+                var closes90 = await GetCloses(symbol, apiKey, days: 90);
+
+                if (closes30.Length < 1 || closes90.Length < 1)
+                {
+                    Console.WriteLine($"{symbol}: Insufficient data\n");
+                    continue;
+                }
+
+                await DisplayHelper.PrintETFAnalysis(symbol, closes30, closes90);
+                System.Console.WriteLine();
             }
-
-            DisplayHelper.PrintETFAnalysis(symbol, closes30, closes90);
-            System.Console.WriteLine();
         }
+
+        private static async Task<decimal[]> GetCloses(string symbol, string apiKey, int days)
+        {
+            using var client = new HttpClient();
+            string url = days == 30
+                ? $"https://api.twelvedata.com/time_series?symbol={symbol}&interval=1day&outputsize=30&apikey={apiKey}"
+                : $"https://api.twelvedata.com/time_series?symbol={symbol}&interval=1day&start_date={DateTime.Today.AddMonths(-3):yyyy-MM-dd}&end_date={DateTime.Today:yyyy-MM-dd}&apikey={apiKey}";
+
+            var response = await client.GetStringAsync(url);
+            var json = JObject.Parse(response);
+            var values = json["values"] as JArray;
+
+            if (values == null || values.Count == 0)
+                return Array.Empty<decimal>();
+
+            return values.Select(p => decimal.Parse(p["close"]!.ToString())).Reverse().ToArray();
+        }
+
+        public static async Task<(decimal Latest, decimal High, decimal Drop, decimal RSI)> GetHistoricalDataForRSI(string ticker, string apiKey, int days)
+        {
+            var closes = await GetCloses(ticker, apiKey, days);
+            if (closes == null || closes.Length == 0)
+                throw new Exception($"No close data available for {ticker}");
+
+            decimal latest = closes.Last();
+            decimal high = closes.Max();
+            decimal drop = (1 - (latest / high)) * 100;
+            decimal rsi = RSIHelper.CalculateRSI(closes, days);
+
+            return (latest, high, drop, rsi);
+        }
+
     }
 
-    private static async Task<decimal[]> GetCloses(string symbol, string apiKey, int days)
-    {
-        using var client = new HttpClient();
-        string url = days == 30
-            ? $"https://api.twelvedata.com/time_series?symbol={symbol}&interval=1day&outputsize=30&apikey={apiKey}"
-            : $"https://api.twelvedata.com/time_series?symbol={symbol}&interval=1day&start_date={DateTime.Today.AddMonths(-3):yyyy-MM-dd}&end_date={DateTime.Today:yyyy-MM-dd}&apikey={apiKey}";
-
-        var response = await client.GetStringAsync(url);
-        var json = JObject.Parse(response);
-        var values = json["values"] as JArray;
-
-        if (values == null || values.Count == 0)
-            return Array.Empty<decimal>();
-
-        return values.Select(p => decimal.Parse(p["close"]!.ToString())).Reverse().ToArray();
-    }
 }

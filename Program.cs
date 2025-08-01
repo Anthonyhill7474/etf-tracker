@@ -1,13 +1,14 @@
 ﻿using dotenv.net;
 using System;
 using System.Threading.Tasks;
+using Services;
 
 class Program
 {
     static async Task Main(string[] args)
     {
         DotEnv.Load();
-        string[] etfs = { "SPY", "VOO", "VTI", "SMH", "QQQM", "VOOG", "SPMO" };
+        string[] etfs = { "SPY", "VOO", "VTI", "SMH", "QQQM", "VOOG", "SPMO", "CLOU", "BOTZ", "ARKK", "IGV", "SKYY", "SOXX", "XSD"};
 
         var twelveKey = Environment.GetEnvironmentVariable("TWELVE_DATA_API_KEY");
         var fredKey = Environment.GetEnvironmentVariable("FRED_API_KEY");
