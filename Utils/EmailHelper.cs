@@ -9,11 +9,13 @@ namespace Utils
     {
         public static async Task SendEmailAsync(string subject, string body)
         {
+            string envPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".env");
             DotEnvOptions options = new DotEnvOptions(
-                envFilePaths: new[] { "../../../../.env" },
+                envFilePaths: new[] { envPath },
                 probeForEnv: false,
                 overwriteExistingVars: true
             );
+            DotEnv.Load(options);
 
             DotEnv.Load(options);
             string? smtpHost = Environment.GetEnvironmentVariable("SMTP_HOST");
