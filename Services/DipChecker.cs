@@ -5,8 +5,20 @@ using dotenv.net;
 
 namespace Services
 {
+    /// <summary>
+    /// Responsible for determining whether an ETF qualifies as a dip candidate and returning alert messages.
+    /// </summary>
     public static class DipChecker
     {
+        /// <summary>
+        /// Evaluates whether an ETF has dropped enough with low RSI to be considered a dip candidate.
+        /// </summary>
+        /// <param name="symbol">ETF ticker</param>
+        /// <param name="latest">Latest price</param>
+        /// <param name="high">Recent high price</param>
+        /// <param name="rsi">RSI value</param>
+        /// <param name="isLongTerm">Whether checking long-term (90d) dip</param>
+        /// <returns>Alert string or "No alert"</returns>
         public static async Task<string> CheckDipAndAlert(string symbol, decimal latest, decimal high, decimal rsi, bool isLongTerm)
         {
             decimal drop = (1 - (latest / high)) * 100;
@@ -23,7 +35,7 @@ namespace Services
                     body += " (RSI confirms oversold)";
                 }
 
-                await EmailHelper.SendEmailAsync(subject, body);
+                // await EmailHelper.SendEmailAsync(subject, body);
                 return subject;
             }
 
@@ -38,7 +50,7 @@ namespace Services
                     body += " (RSI confirms oversold)";
                 }
 
-                await EmailHelper.SendEmailAsync(subject, body);
+                // await EmailHelper.SendEmailAsync(subject, body);
                 return subject;
             }
 

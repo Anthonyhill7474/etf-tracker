@@ -5,8 +5,16 @@ using dotenv.net;
 
 namespace Utils
 {
+    /// <summary>
+    /// Handles sending email alerts via SMTP with credentials loaded from environment variables.
+    /// </summary>
     public static class EmailHelper
     {
+        /// <summary>
+        /// Sends an email using credentials and settings in the .env file.
+        /// </summary>
+        /// <param name="subject">Email subject line</param>
+        /// <param name="body">Email body content</param>
         public static async Task SendEmailAsync(string subject, string body)
         {
             string envPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".env");
@@ -22,7 +30,7 @@ namespace Utils
             string? smtpPort = Environment.GetEnvironmentVariable("SMTP_PORT");
             string? smtpUser = Environment.GetEnvironmentVariable("SMTP_USER");
             string? smtpPass = Environment.GetEnvironmentVariable("SMTP_PASS");
-            string? toEmail  = Environment.GetEnvironmentVariable("ALERT_RECIPIENT");     
+            string? toEmail = Environment.GetEnvironmentVariable("ALERT_RECIPIENT");
 
             if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(smtpPort) ||
                 string.IsNullOrEmpty(smtpUser) || string.IsNullOrEmpty(smtpPass) ||

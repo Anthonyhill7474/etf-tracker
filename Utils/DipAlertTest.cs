@@ -5,13 +5,19 @@ using Services;
 
 namespace ETFTracker.Tests
 {
+    // <summary>
+    /// Test module for checking dip alert detection logic using live data.
+    /// </summary>
     class DipAlertTest
     {
+        /// <summary>
+        /// Runs a test to see if a specific ETF meets dip criteria and simulates sending an email.
+        /// </summary>
         public static async Task RunTest()
         {
             string ticker = "SPY"; // Replace with another ETF symbol if needed
             string apiKey = Environment.GetEnvironmentVariable("TWELVE_DATA_API_KEY")!;
-            
+
             try
             {
                 var (latest, high, drop, rsi) = await DataFetcher.GetHistoricalDataForRSI(ticker, apiKey, 30);

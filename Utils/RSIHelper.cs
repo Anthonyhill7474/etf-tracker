@@ -1,8 +1,17 @@
 using System;
 using System.Linq;
 
+/// <summary>
+/// Provides RSI (Relative Strength Index) calculation functionality.
+/// </summary>
 public static class RSIHelper
 {
+    /// <summary>
+    /// Calculates the RSI for a given array of closing prices and period.
+    /// </summary>
+    /// <param name="prices">Array of closing prices</param>
+    /// <param name="period">Number of periods to calculate over (e.g. 14)</param>
+    /// <returns>RSI value between 0–100</returns>
     public static decimal CalculateRSI(decimal[] prices, int period)
     {
         if (prices.Length <= period)

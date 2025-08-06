@@ -26,7 +26,7 @@ class Program
             return;
         }
 
-        await VixService.ShowVix(fredKey);
+        await VixService.GetVixSummary(fredKey);
         DisplayHelper.PrintRSIExplanation();
         await DataFetcher.AnalyzeETFs(etfs, twelveKey);
     }

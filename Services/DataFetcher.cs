@@ -3,29 +3,81 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using System.Text;
+
 namespace Services
 {
+    /// <summary>
+    /// Responsible for fetching ETF data and performing analysis.
+    /// </summary>
     public static class DataFetcher
     {
+        /// <summary>
+        /// Analyzes a list of ETF symbols using 30-day and 90-day historical data.
+        /// Generates a summary, identifies dip candidates, and sends a report via email.
+        /// </summary>
+        /// <param name="symbols">Array of ETF symbols (e.g., SPY, QQQM)</param>
+        /// <param name="apiKey">Twelve Data API key</param>
         public static async Task AnalyzeETFs(string[] symbols, string apiKey)
         {
+            var summary = new StringBuilder();
+            var dipCandidates = new List<string>();
+            var shortTermWatchlist = new List<string>();
+            var longTermWatchlist = new List<string>();
+
+
+            var dipList = new List<string>();
+            string fredKey = Environment.GetEnvironmentVariable("FRED_API_KEY")!;
+            string vixSummary = await VixService.GetVixSummary(fredKey);        
+            summary.AppendLine(vixSummary);
+            summary.AppendLine("📊 ETF Analysis Summary:\n");
+
             foreach (string symbol in symbols)
             {
                 await Task.Delay(15000);
+
                 var closes30 = await GetCloses(symbol, apiKey, days: 30);
                 var closes90 = await GetCloses(symbol, apiKey, days: 90);
 
                 if (closes30.Length < 1 || closes90.Length < 1)
                 {
-                    Console.WriteLine($"{symbol}: Insufficient data\n");
+                    string msg = $"{symbol}: Insufficient data\n";
+                    Console.WriteLine(msg);
+                    summary.AppendLine(msg);
                     continue;
                 }
 
-                await DisplayHelper.PrintETFAnalysis(symbol, closes30, closes90);
+                // Track original length before analysis
+                int before = summary.Length;
+
+                await DisplayHelper.PrintETFAnalysis(symbol, closes30, closes90, summary, dipCandidates, shortTermWatchlist, longTermWatchlist);
                 System.Console.WriteLine();
+
             }
+            var dipText = dipCandidates.Count > 0
+                ? $"✅ Dip Candidates: {string.Join(", ", dipCandidates)}"
+                : "✅ No current dip candidates.";
+
+            var shortWatchlistText = shortTermWatchlist.Count > 0
+                ? $"⚠️ Short-Term Watchlist: {string.Join(", ", shortTermWatchlist)}"
+                : "⚠️No current Short-Term ETF candidates.";
+
+            var longWatchlistText = longTermWatchlist.Count > 0
+                ? $"🔍 Short-Term Watchlist: {string.Join(", ", longTermWatchlist)}"
+                : "🔍 No current Long-Term ETF candidates.";
+
+            var finalBody = $"{dipText}\n{shortWatchlistText}\n{longWatchlistText}\n\n{summary.ToString()}";
+
+            await Utils.EmailHelper.SendEmailAsync("📊 ETF Summary Report", finalBody);
         }
 
+        /// <summary>
+        /// Fetches historical closing prices for a given symbol and time frame.
+        /// </summary>
+        /// <param name="symbol">ETF ticker symbol</param>
+        /// <param name="apiKey">Twelve Data API key</param>
+        /// <param name="days">Number of days (30 or 90)</param>
+        /// <returns>Array of decimal closing prices</returns>
         private static async Task<decimal[]> GetCloses(string symbol, string apiKey, int days)
         {
             using var client = new HttpClient();
@@ -43,6 +95,13 @@ namespace Services
             return values.Select(p => decimal.Parse(p["close"]!.ToString())).Reverse().ToArray();
         }
 
+        /// <summary>
+        /// Gets the latest price, high, percent drop, and RSI for a given ETF.
+        /// </summary>
+        /// <param name="ticker">ETF symbol</param>
+        /// <param name="apiKey">Twelve Data API key</param>
+        /// <param name="days">Timeframe for RSI (e.g., 14, 30, 60)</param>
+        /// <returns>Tuple containing latest price, high, drop %, and RSI</returns>
         public static async Task<(decimal Latest, decimal High, decimal Drop, decimal RSI)> GetHistoricalDataForRSI(string ticker, string apiKey, int days)
         {
             var closes = await GetCloses(ticker, apiKey, days);
