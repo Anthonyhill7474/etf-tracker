@@ -24,6 +24,7 @@ namespace Services
             var dipCandidates = new List<string>();
             var shortTermWatchlist = new List<string>();
             var longTermWatchlist = new List<string>();
+            var dropSummaries = new List<string>();
 
 
             var dipList = new List<string>();
@@ -50,10 +51,14 @@ namespace Services
                 // Track original length before analysis
                 int before = summary.Length;
 
-                await DisplayHelper.PrintETFAnalysis(symbol, closes30, closes90, summary, dipCandidates, shortTermWatchlist, longTermWatchlist);
+                await DisplayHelper.PrintETFAnalysis(symbol, closes30, closes90, summary, dipCandidates, shortTermWatchlist, longTermWatchlist, dropSummaries);
                 System.Console.WriteLine();
 
             }
+            var dropSummaryText = dropSummaries.Count > 0
+                ? $"📉 Drops Summary: {string.Join(" | ", dropSummaries)}\n"
+                : "📉 No drop data available\n";
+
             var dipText = dipCandidates.Count > 0
                 ? $"✅ Dip Candidates: {string.Join(", ", dipCandidates)}"
                 : "✅ No current dip candidates.";
@@ -66,7 +71,7 @@ namespace Services
                 ? $"🔍 Short-Term Watchlist: {string.Join(", ", longTermWatchlist)}"
                 : "🔍 No current Long-Term ETF candidates.";
 
-            var finalBody = $"{dipText}\n{shortWatchlistText}\n{longWatchlistText}\n\n{summary.ToString()}";
+            var finalBody = $"{dipText}\n{shortWatchlistText}\n{longWatchlistText}\n\n{dropSummaryText}\n\n{summary.ToString()}";
 
             await Utils.EmailHelper.SendEmailAsync("📊 ETF Summary Report", finalBody);
         }

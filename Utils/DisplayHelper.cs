@@ -32,7 +32,7 @@ public static class DisplayHelper
     /// <param name="dipCandidates">List of dip candidates</param>
     /// <param name="shortTermWatchlist">List of short-term drop watch symbols</param>
     /// <param name="longTermWatchlist">List of long-term drop watch symbols</param>
-    public static async Task PrintETFAnalysis(string symbol, decimal[] closes30, decimal[] closes90, StringBuilder? summary = null, List<string>? dipCandidates = null, List<string>? shortTermWatchlist = null, List<string>? longTermWatchlist = null)
+    public static async Task PrintETFAnalysis(string symbol, decimal[] closes30, decimal[] closes90, StringBuilder? summary = null, List<string>? dipCandidates = null, List<string>? shortTermWatchlist = null, List<string>? longTermWatchlist = null, List<string>? dropSummaries = null)
     {
         decimal latest = closes30.Last();
         decimal high30 = closes30.Max();
@@ -48,6 +48,7 @@ public static class DisplayHelper
 
         Console.WriteLine(line1);
         Console.WriteLine(line2);
+        dropSummaries.Add($"{symbol}: 30d {drop30:F2}%, 90d {drop90:F2}%");
         summary?.AppendLine(line1).AppendLine(line2);
 
         if (drop30 > 4)
