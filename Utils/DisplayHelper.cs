@@ -65,8 +65,8 @@ public static class DisplayHelper
             {
                 dipCandidates?.Add(symbol);
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"✅ {symbol} is a DIP CANDIDATE (Drop > 5%, RSI < 42)");
-                summary?.AppendLine($"✅ {symbol} is a DIP CANDIDATE (Drop > 5%, RSI < 42)");
+                Console.WriteLine($"✅ {symbol} is a DIP CANDIDATE (Drop > 4%, RSI < 42)");
+                summary?.AppendLine($"✅ {symbol} is a DIP CANDIDATE (Drop > 4%, RSI < 42)");
 
                 subject = $"✅ DIP CANDIDATE: {symbol}";
                 body += $"\nRSI: {rsi30:F1} (oversold)";
@@ -93,8 +93,8 @@ public static class DisplayHelper
             {
                 dipCandidates?.Add(symbol);
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"✅ {symbol} is a LONG-TERM DIP CANDIDATE (Drop > 8%, RSI < 44)");
-                summary?.AppendLine($"✅ {symbol} is a LONG-TERM DIP CANDIDATE (Drop > 8%, RSI < 44)");
+                Console.WriteLine($"✅ {symbol} is a LONG-TERM DIP CANDIDATE (Drop > 7%, RSI < 44)");
+                summary?.AppendLine($"✅ {symbol} is a LONG-TERM DIP CANDIDATE (Drop > 7%, RSI < 44)");
 
                 subject = $"✅ LONG-TERM DIP: {symbol}";
                 body += $"\nRSI: {rsi60:F1} (oversold)";
